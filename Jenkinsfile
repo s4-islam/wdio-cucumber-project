@@ -29,12 +29,4 @@ pipeline {
             }
         }
     }
-
-    post {
-        always {
-            sh 'npx allure generate allure-results --clean -o allure-report'
-            archiveArtifacts artifacts: 'allure-report/**'
-            cleanWs()
-        }
-    }
 }
