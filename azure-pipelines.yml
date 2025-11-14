@@ -1,19 +1,41 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+stages:
+ - stage: CreateAndPublishFile
+   displayName: "Stage 1: Create and Publish File"
+   jobs:
+   - job: CreateFileAndPublishJob
+   displayName: 'Create file and publish'
+   pool:
+     vmImage: ubuntu-latest
+   steps:
+   - script: |
+      echo "Hello World!" > hello.txt
+      mkdir -p $(Build.ArtifactStagingDirectory)
+      cp hello.txt $(Build.ArtifactStagingDirectory)/
+     displayName: "Create hello.txt"
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+   - task: PublishPipelineArtifact@1
+     inputs:
+       targetPath: '$(Build.ArtifactStagingDirectory)'
+       artifact: 'my-text-file'
+     displayName: "Publish hello.txt as artifact"
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+ - stage: DownloadAndReadFile
+   displayName: "Stage 2: Download and Read File"
+   dependsOn: CreateAndPublishFile
+   jobs:
+    - job: DownloadAndReadFileJob
+      displayName: "Download and read file job"
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+       - task: DownloadPipelineArtifact@2
+         inputs:
+           artifact: 'my-text-file'
+           path: '$(Pipeline.Workspace)'
+         displayName: "Download hello.txt artifact"
+
+       - script: cat $(Pipeline.Workspace/hello.txt)
+         displayName: "Display context of hello.txt"
