@@ -1,41 +1,24 @@
 trigger:
 - main
 
+pool:
+  vmImage: ubuntu-latest
+
 stages:
- - stage: CreateAndPublishFile
-   displayName: "Stage 1: Create and Publish File"
-   jobs:
-   - job: CreateFileAndPublishJob
-   displayName: 'Create file and publish'
-   pool:
-     vmImage: ubuntu-latest
-   steps:
-   - script: |
-      echo "Hello World!" > hello.txt
-      mkdir -p $(Build.ArtifactStagingDirectory)
-      cp hello.txt $(Build.ArtifactStagingDirectory)/
-     displayName: "Create hello.txt"
+- stage: CreateFile
+  jobs:
+  - job: Create_a_text_file
+    steps:
+    - script: mkdir files && cd files && echo "Hello World" > file.txt
+      displayName: 'Create file'
+    - publish: '$(System.DefaultWorkingDirectory)/files'
+      displayName: 'Publish file'
+      artifact: drop
 
-   - task: PublishPipelineArtifact@1
-     inputs:
-       targetPath: '$(Build.ArtifactStagingDirectory)'
-       artifact: 'my-text-file'
-     displayName: "Publish hello.txt as artifact"
-
- - stage: DownloadAndReadFile
-   displayName: "Stage 2: Download and Read File"
-   dependsOn: CreateAndPublishFile
-   jobs:
-    - job: DownloadAndReadFileJob
-      displayName: "Download and read file job"
-      pool:
-        vmImage: ubuntu-latest
-      steps:
-       - task: DownloadPipelineArtifact@2
-         inputs:
-           artifact: 'my-text-file'
-           path: '$(Pipeline.Workspace)'
-         displayName: "Download hello.txt artifact"
-
-       - script: cat $(Pipeline.Workspace/hello.txt)
-         displayName: "Display context of hello.txt"
+- stage: ReadTheFile
+  jobs:
+  - job: Read_the_file
+    steps: 
+    - download: current
+      artifact: drop
+    - script: cat '$(Pipeline.Workspace)/drop/file.txt'
