@@ -9,7 +9,10 @@ stages:
   jobs:
   - job: Create_a_text_file
     steps:
-    - script: mkdir files && cd files && echo "Hello World" > file.txt
+    - script: |
+        mkdir files
+        cd files
+        echo "Hello World" > file.txt
       displayName: 'Create file'
     - publish: '$(System.DefaultWorkingDirectory)/files'
       displayName: 'Publish file'
