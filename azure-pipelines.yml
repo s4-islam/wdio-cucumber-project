@@ -1,26 +1,27 @@
 trigger:
 - main
 
+pool:
+     vmImage: ubuntu-latest
+
 stages:
  - stage: CreateAndPublishFile
    displayName: "Stage 1: Create and Publish File"
    jobs:
    - job: CreateFileAndPublishJob
-   displayName: 'Create file and publish'
-   pool:
-     vmImage: ubuntu-latest
-   steps:
-   - script: |
-      echo "Hello World!" > hello.txt
-      mkdir -p $(Build.ArtifactStagingDirectory)
-      cp hello.txt $(Build.ArtifactStagingDirectory)/
-     displayName: "Create hello.txt"
+     displayName: 'Create file and publish'
+     steps:
+     - script: |
+        echo "Hello World!" > hello.txt
+        mkdir -p $(Build.ArtifactStagingDirectory)
+        cp hello.txt $(Build.ArtifactStagingDirectory)/
+       displayName: "Create hello.txt"
 
-   - task: PublishPipelineArtifact@1
-     inputs:
-       targetPath: '$(Build.ArtifactStagingDirectory)'
-       artifact: 'my-text-file'
-     displayName: "Publish hello.txt as artifact"
+     - task: PublishPipelineArtifact@1
+       inputs:
+         targetPath: '$(Build.ArtifactStagingDirectory)'
+         artifact: 'my-text-file'
+       displayName: "Publish hello.txt as artifact"
 
  - stage: DownloadAndReadFile
    displayName: "Stage 2: Download and Read File"
